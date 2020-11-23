@@ -1,32 +1,76 @@
 <template>
   <div class="contacts" data-app>
     <div class="wrap">
-      <h1>Contacts</h1>
-      <div>
-        <v-btn>
-          <v-icon class="fas fa-redo"></v-icon>
-        </v-btn>
-        <v-btn @click="viewTable(false)" :disabled="!table">
-          <v-icon class="fas fa-border-all"></v-icon>
-        </v-btn>
-        <v-btn @click="viewTable(true)" :disabled="table">
-          <v-icon class="fas fa-list-ul"></v-icon>
-        </v-btn>
+      <div class="nav">
+        <h1>Contacts</h1>
+        <div>
+          <v-btn @click.prevent="refresh">
+            <v-icon>mdi-refresh</v-icon>
+          </v-btn>
+          <v-btn @click="viewTable(false)" :disabled="!table">
+            <v-icon>mdi-table-account</v-icon>
+          </v-btn>
+          <v-btn class="viewTable" @click="viewTable(true)" :disabled="table">
+            <v-icon>mdi-format-list-bulleted-triangle</v-icon>
+          </v-btn>
+        </div>
+      </div>
+      <div class="search_fields">
+        <v-row align="center">
+          <v-col cols="12" sm="6">
+            <v-text-field
+              placeholder="Search by full name"
+              solo
+              clearable
+              append-icon="mdi-feature-search-outline"
+            ></v-text-field>
+          </v-col>
+          <v-col class="d-flex" cols="12" sm="3">
+            <v-select
+              :items="genders"
+              placeholder="Gender"
+              solo
+              v-model="gender"
+              @change="sortByGender"
+            ></v-select>
+          </v-col>
+          <v-col cols="12" sm="3">
+            <v-text-field
+              placeholder="Nationality"
+              solo
+              v-model="nationalitiesInput"
+              @input="sortByNationalities"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" class="clearBtn">
+            <v-btn
+              large
+              text
+              rounded
+              outlined
+              elevation="5"
+              class="clearButton"
+              @click="resetFields"
+            >
+              <v-icon center left small> mdi-close </v-icon>
+              Clear
+            </v-btn>
+          </v-col>
+        </v-row>
       </div>
     </div>
+
     <div>
       <loader v-if="loading" />
       <div v-else>
         <v-simple-table v-if="table" class="table">
           <thead>
             <tr>
-              <td
-                v-for="title in tableTitle"
-                :key="title.title"
-                class="text-left"
-              >
-                {{ title.title }}
-              </td>
+              <th v-for="title in tableTitle" :key="title.title">
+                <h3 class="tableTitle">{{ title.title }}</h3>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -42,7 +86,7 @@
                 }}
               </td>
               <td>
-                <div>{{ contact.dob.date | birthdayFilter }}</div>
+                <div>{{ contact.dob.date | birthday }}</div>
                 <div>{{ contact.dob.age }}</div>
               </td>
 
@@ -68,7 +112,7 @@
                 </div>
               </td>
               <td>
-                <span>{{ contact.nat | nationalityFilter }}</span>
+                <span>{{ contact.nat | nationalities }}</span>
               </td>
             </tr>
           </tbody>
@@ -76,7 +120,7 @@
         <div class="tile" v-else>
           <v-card
             class="mx-auto"
-            max-width="300"
+            min-width="300"
             v-for="contact in getContacts()"
             :key="contact.login.uuid"
           >
@@ -114,7 +158,6 @@
 <script>
 import { mapActions, mapGetters } from "vuex";
 import TooltipCopy from "@/components/TooltipCopy";
-import nationalities from "@/constants/nationalities";
 import Loader from "@/components/Loader/Loader";
 export default {
   name: "Contacts",
@@ -130,37 +173,47 @@ export default {
       { title: "Location" },
       { title: "Nationality" },
     ],
+    genders: ["Male", "Female"],
+    gender: "",
+    nationalitiesInput: "",
   }),
   components: {
     TooltipCopy,
     Loader,
   },
   methods: {
-    ...mapActions(["onGetContacts"]),
+    ...mapActions(["onGetContacts", "onSortByGender", "onSortByNationalities"]),
     ...mapGetters(["getContacts"]),
     viewTable(data) {
       localStorage.table = data;
       this.table = !this.table;
     },
-  },
-  filters: {
-    birthdayFilter(e) {
-      let date = new Date(e);
-      let options = {
-        year: "2-digit",
-        month: "2-digit",
-        day: "2-digit",
-        weekday: "long",
-        timezone: "UTC",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-      };
-      return date.toLocaleString("en-US", options);
+    async refresh() {
+      this.loading = true;
+      this.nationalitiesInput = "";
+      this.gender = "";
+      await this.onGetContacts();
+      this.loading = false;
     },
-    nationalityFilter(e) {
-      let nat = nationalities.filter((n) => n.CountryCode === e);
-      return nat[0].Nationality;
+    async sortByGender() {
+      this.loading = true;
+      this.nationalitiesInput = "";
+      await this.onSortByGender(this.gender);
+      this.loading = false;
+    },
+    async sortByNationalities() {
+      this.loading = true;
+      this.gender = "";
+      await this.onSortByNationalities(this.nationalitiesInput);
+      this.loading = false;
+    },
+    async resetFields() {
+      if (this.gender.length > 0) {
+        this.loading = true;
+        this.gender = "";
+        await this.onGetContacts();
+        this.loading = false;
+      } else return;
     },
   },
   async created() {
@@ -169,34 +222,95 @@ export default {
     this.loading = false;
   },
   mounted() {
-    if (localStorage.getItem("table"))
+    if (localStorage.getItem("table")) {
       this.table = JSON.parse(localStorage.getItem("table"));
+    }
+    let vm = this;
+    window.addEventListener("resize", function () {
+      if (window.innerWidth < 1275) {
+        localStorage.table = false;
+        vm.table = false;
+      } else {
+        this.table = JSON.parse(localStorage.getItem("table"));
+      }
+    });
   },
 };
 </script>
 <style lang="scss" scoped>
 .wrap {
-  display: flex;
-  justify-content: space-between;
   padding: 1% 6% 0;
+  .nav {
+    display: flex;
+    justify-content: space-between;
+  }
+  .search_fields {
+    padding-top: 1%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
 }
 .tile {
   display: grid;
   grid-template-columns: repeat(auto-fill, 300px);
   grid-gap: 25px;
   justify-content: center;
-  padding: 2% 0;
+  justify-items: center;
+  padding: 0% 6% 0;
 }
 .table {
-  max-width: 90%;
   margin: 0 auto;
-  padding: 2% 0;
+  padding: 0% 6% 0;
 }
 
 .theme--light.v-btn.v-btn--disabled:not(.v-btn--flat):not(.v-btn--text):not(.v-btn--outlined) {
-  background-color: #1d8ffe !important;
+  background-color: #aeddff !important;
 }
+
 tr > td {
   padding: 7px !important;
+}
+.clearBtn {
+  display: flex;
+  justify-content: flex-end;
+  .clearButton {
+    text-transform: to-upper-case($string: none);
+  }
+}
+
+.tableTitle {
+  color: gray;
+  display: flex;
+  justify-content: flex-start;
+  margin-left: -10px;
+}
+@media screen and (max-width: 1400px) {
+  .table,
+  .tile {
+    padding: 0% 1% 0;
+  }
+}
+@media screen and (max-width: 1275px) {
+  .table,
+  .viewTable {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 1150px) {
+  .wrap {
+    .search_fields {
+      padding-top: 1%;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+  .clearBtn {
+    justify-content: center;
+  }
+  .v-text-field.v-text-field--enclosed .v-text-field__details {
+    display: none !important;
+  }
 }
 </style>
