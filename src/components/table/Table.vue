@@ -1,0 +1,101 @@
+<template>
+  <v-simple-table class="table">
+    <thead>
+      <tr>
+        <th v-for="title in tableTitle" :key="title.title">
+          <h3 class="tableTitle">{{ title.title }}</h3>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="contact in contacts" :key="contact.login.uuid">
+        <td>
+          <v-avatar><v-img :src="contact.picture.thumbnail"></v-img></v-avatar>
+        </td>
+        <td>
+          {{
+            `${contact.name.title}. ${contact.name.first} ${contact.name.last}`
+          }}
+        </td>
+        <td>
+          <div>{{ contact.dob.date | birthday }}</div>
+          <div>{{ contact.dob.age }}</div>
+        </td>
+
+        <td><TooltipCopy :val="contact.email" /></td>
+
+        <td>
+          <TooltipCopy :val="contact.phone" />
+        </td>
+
+        <td>
+          <div>
+            {{ ` / ${contact.location.country} / ` }}
+          </div>
+          <div>
+            {{
+              `${contact.location.street.number} ${contact.location.street.name}`
+            }}
+          </div>
+          <div>
+            {{
+              `${contact.location.state} ${contact.location.city} ${contact.location.postcode}`
+            }}
+          </div>
+        </td>
+        <td>
+          <span>{{ contact.nat | nationalities }}</span>
+        </td>
+      </tr>
+    </tbody>
+  </v-simple-table>
+</template>
+
+<script>
+import TooltipCopy from "@/components/TooltipCopy";
+export default {
+  components: {
+    TooltipCopy,
+  },
+  props: ["contacts"],
+  data: () => ({
+    tableTitle: [
+      { title: "Avatar" },
+      { title: "Fullname" },
+      { title: "Birthday" },
+      { title: "Email" },
+      { title: "Phone" },
+      { title: "Location" },
+      { title: "Nationality" },
+    ],
+  }),
+};
+</script>
+
+<style lang='scss' scoped>
+.table {
+  margin: 0 auto;
+  padding: 0% 6% 0;
+
+}
+.tableTitle {
+  color: gray;
+  display: flex;
+  justify-content: flex-start;
+  margin-left: -10px;
+}
+tr > td {
+  padding: 7px !important;
+}
+
+@media screen and (max-width: 1400px) {
+  .table {
+    padding: 0% 1% 0;
+  }
+}
+@media screen and (max-width: 1275px) {
+  .table {
+    display: none !important;
+  }
+}
+</style>

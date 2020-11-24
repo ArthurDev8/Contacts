@@ -9,6 +9,12 @@ export default {
     setContacts(state, data) {
       state.contacts = data;
     },
+    setSortByFullName(state, data) {
+      state.contacts = state.contacts.filter(function(c) {
+        let fullName = c.name.first + c.name.last;
+        return fullName.toLowerCase().includes(data.toLowerCase());
+      });
+    },
     setSortByGender(state, data) {
       state.contacts = state.contacts.filter((c) => {
         return c.gender.toLowerCase() === data.toLowerCase();
@@ -17,7 +23,7 @@ export default {
     setSortByNationalities(state, data) {
       state.contacts = state.contacts.filter(function(c) {
         let nat = nationalitiesFilter(c.nat);
-        return nat.toLowerCase().indexOf(data.toLowerCase()) > -1;
+        return nat.toLowerCase().includes(data.toLowerCase());
       });
     },
   },
@@ -32,6 +38,10 @@ export default {
         // console.log(res.data.results);
         commit("setContacts", res.data.results);
       });
+    },
+    async onSortByFullName({ commit, dispatch }, data) {
+      await dispatch("onGetContacts");
+      commit("setSortByFullName", data);
     },
     async onSortByGender({ commit, dispatch }, data) {
       await dispatch("onGetContacts");
