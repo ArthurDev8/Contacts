@@ -16,7 +16,7 @@ export default {
   },
   actions: {
     async onGetContacts({ commit }) {
-      await axios.get("https://randomuser.me/api/?results=200").then((res) => {
+      await axios.get("https://randomuser.me/api/?results=20").then((res) => {
         // console.log(res.data.results);
         commit("setContacts", res.data.results);
       });

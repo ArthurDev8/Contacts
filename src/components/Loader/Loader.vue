@@ -76,6 +76,7 @@
   background: #ff4c4c;
 }
 .loadingio-spinner-interwind-jhdgx8sphg {
+  width: 100%;
   width: 294px;
   height: 294px;
   display: inline-block;
@@ -91,7 +92,7 @@
   position: relative;
   transform: translateZ(0) scale(1);
   backface-visibility: hidden;
-  transform-origin: 0 0; 
+  transform-origin: 0 0;
 }
 .ldio-0auxitipdjof div {
   box-sizing: content-box;
