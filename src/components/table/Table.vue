@@ -76,7 +76,6 @@ export default {
 .table {
   margin: 0 auto;
   padding: 0% 6% 0;
-
 }
 .tableTitle {
   color: gray;

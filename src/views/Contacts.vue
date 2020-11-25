@@ -24,7 +24,6 @@
               clearable
               append-icon="mdi-feature-search-outline"
               v-model="fullName"
-              @input="sortByFullName"
             ></v-text-field>
           </v-col>
           <v-col class="d-flex" cols="12" sm="3">
@@ -33,7 +32,6 @@
               placeholder="Gender"
               solo
               v-model="gender"
-              @change="sortByGender"
             ></v-select>
           </v-col>
           <v-col cols="12" sm="3">
@@ -41,7 +39,6 @@
               placeholder="Nationality"
               solo
               v-model="nationalitiesInput"
-              @input="sortByNationalities"
             ></v-text-field>
           </v-col>
         </v-row>
@@ -67,11 +64,11 @@
       <loader v-if="loading" />
       <div v-else>
         <div v-if="table">
-          <Table :contacts="getContacts()" />
+          <Table :contacts="filteredList" />
         </div>
 
         <div v-else>
-          <Tile :contacts="getContacts()" />
+          <Tile :contacts="filteredList" />
         </div>
       </div>
     </div>
@@ -83,9 +80,11 @@ import { mapActions, mapGetters } from "vuex";
 import Loader from "@/components/Loader/Loader";
 import Tile from "@/components/tile/Tile";
 import Table from "@/components/table/Table";
+import nationalitiesFilter from "@/filters/nationalitiesFilter";
 export default {
   name: "Contacts",
   data: () => ({
+    contacts: [],
     loading: true,
     table: true,
     genders: ["Male", "Female"],
@@ -99,12 +98,7 @@ export default {
     Tile,
   },
   methods: {
-    ...mapActions([
-      "onGetContacts",
-      "onSortByGender",
-      "onSortByNationalities",
-      "onSortByFullName",
-    ]),
+    ...mapActions(["onGetContacts"]),
     ...mapGetters(["getContacts"]),
     viewTable(data) {
       localStorage.table = data;
@@ -116,47 +110,47 @@ export default {
       this.gender = "";
       this.fullName = "";
       await this.onGetContacts();
-      this.loading = false;
-    },
-    async sortByFullName() {
-      this.loading = true;
-      this.nationalitiesInput = "";
-      this.gender = "";
-      await this.onSortByFullName(this.fullName);
-      this.loading = false;
-    },
-    async sortByGender() {
-      this.loading = true;
-      this.fullName = "";
-      this.nationalitiesInput = "";
-      await this.onSortByGender(this.gender);
-      this.loading = false;
-    },
-    async sortByNationalities() {
-      this.loading = true;
-      this.gender = "";
-      this.fullName = "";
-      await this.onSortByNationalities(this.nationalitiesInput);
+      this.contacts = this.getContacts();
       this.loading = false;
     },
     async resetFields() {
-      if (
-        this.gender.length > 0 ||
-        this.fullName.length > 0 ||
-        this.nationalitiesInput.length > 0
-      ) {
-        this.loading = true;
-        this.fullName = "";
-        this.gender = "";
-        this.nationalitiesInput = "";
-        await this.onGetContacts();
-        this.loading = false;
-      } else return;
+      this.fullName = "";
+      this.gender = "";
+      this.nationalitiesInput = "";
+    },
+  },
+  computed: {
+    filteredList() {
+      let gender = this.gender;
+      let nationalitiesInput = this.nationalitiesInput;
+      let fullName = this.fullName;
+      return this.contacts
+        .filter((c) => {
+          if (gender === "") return true;
+          return c.gender.toLowerCase() === gender.toLowerCase();
+        })
+        .filter((c) => {
+          if (nationalitiesInput === "") {
+            return true;
+          } else {
+            let nat = nationalitiesFilter(c.nat);
+            return nat.toLowerCase().includes(nationalitiesInput.toLowerCase());
+          }
+        })
+        .filter((c) => {
+          if (fullName === "") {
+            return true;
+          } else {
+            let firstAndLast = c.name.first + c.name.last;
+            return firstAndLast.toLowerCase().includes(fullName.toLowerCase());
+          }
+        });
     },
   },
   async created() {
     this.loading = true;
     await this.onGetContacts();
+    this.contacts = this.getContacts();
     this.loading = false;
   },
   mounted() {
