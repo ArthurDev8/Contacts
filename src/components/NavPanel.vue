@@ -24,7 +24,12 @@ export default {
       this.$emit("changeData", data);
     },
     refresh() {
-      this.$emit("refresh");
+      let searchFieldsReset = {
+        nationalitiesInput: "",
+        gender: "",
+        fullName: "",
+      };
+      this.$emit("refresh", searchFieldsReset);
     },
   },
 };

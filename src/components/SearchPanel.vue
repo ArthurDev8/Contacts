@@ -49,7 +49,7 @@
 import { mapActions, mapGetters } from "vuex";
 import nationalitiesFilter from "@/filters/nationalitiesFilter";
 export default {
-  props: ["contacts"],
+  props: ["contacts", "resetSearchFields"],
   data: () => ({
     genders: ["Male", "Female"],
     fullName: "",
@@ -95,6 +95,9 @@ export default {
   watch: {
     filteredList(e) {
       this.$emit("newContacts", e);
+    },
+    resetSearchFields() {
+      this.resetFields();
     },
   },
 };

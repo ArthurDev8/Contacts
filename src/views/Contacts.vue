@@ -2,7 +2,11 @@
   <div class="contacts" data-app>
     <div class="wrap">
       <NavPanel @changeData="changeData" @refresh="refresh" :table="table" />
-      <SearchPanel :contacts="contacts" @newContacts="newCont" />
+      <SearchPanel
+        :contacts="contacts"
+        @newContacts="newCont"
+        :resetSearchFields="resetSearchFields"
+      />
     </div>
     <div>
       <loader v-if="loading" />
@@ -37,6 +41,7 @@ export default {
     table: true,
     dataCont: null,
     newC: null,
+    resetSearchFields: null,
   }),
   components: {
     Loader,
@@ -58,11 +63,9 @@ export default {
     newCont(data) {
       this.newC = data;
     },
-    async refresh() {
+    async refresh(data) {
       this.loading = true;
-      this.nationalitiesInput = "";
-      this.gender = "";
-      this.fullName = "";
+      this.resetSearchFields = data;
       await this.onGetContacts();
       this.contacts = this.getContacts();
       this.loading = false;
