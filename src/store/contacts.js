@@ -8,14 +8,6 @@ export default {
     setContacts(state, data) {
       state.contacts = data;
     },
-    updateContacts(state, data) {
-      console.log(data);
-
-      state.contacts = data;
-    },
-    setUpdateByFilter(state, data) {
-      state.contacts = data;
-    },
   },
   getters: {
     getContacts(state) {
@@ -28,12 +20,6 @@ export default {
         // console.log(res.data.results);
         commit("setContacts", res.data.results);
       });
-    },
-    updateSetContacts({ commit }, data) {
-      commit("updateContacts", data);
-    },
-    updateContactsByFilter({ commit }, data) {
-      commit("setUpdateByFilter", data);
     },
   },
 };
