@@ -5,12 +5,9 @@
         <th v-for="title in tableTitle" :key="title.title">
           <h3 class="tableTitle">
             <span>{{ title.title }}</span>
-            <v-icon
-              @click="sortBy"
-              class="iconSort"
-              :class="title.icon"
-              medium
-            ></v-icon>
+            <v-icon @click="sortBy" class="iconSort" medium>{{
+              title.icon
+            }}</v-icon>
           </h3>
         </th>
       </tr>
@@ -69,7 +66,7 @@ export default {
   data: () => ({
     tableTitle: [
       { title: "Avatar" },
-      { title: "Fullname", icon: "fas fa-sort" },
+      { title: "Fullname", icon: "fas fa-sort-alpha-up" },
       { title: "Birthday" },
       { title: "Email" },
       { title: "Phone" },
@@ -82,11 +79,13 @@ export default {
     sortBy() {
       this.count += 1;
       if (this.count == 1) {
+        this.tableTitle[1].icon = "fas fa-sort-alpha-down-alt";
         this.$emit("sortBy", "a-z");
       } else if (this.count == 2) {
-        // this.count = 0
+        this.tableTitle[1].icon = "fas fa-sort";
         this.$emit("sortBy", "z-a");
       } else if (this.count == 3) {
+        this.tableTitle[1].icon = "fas fa-sort-alpha-up";
         this.count = 0;
         this.$emit("sortBy", "random");
       }
@@ -105,9 +104,10 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-content: center;
-  align-items: center;
   margin-left: -10px;
+
   & span {
+    margin-top: 2px;
     padding-right: 15px;
   }
 }
