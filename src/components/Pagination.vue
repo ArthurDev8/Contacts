@@ -16,7 +16,7 @@
 <script>
 import { mapActions, mapGetters } from "vuex";
 export default {
-  props: ["newC"],
+  props: ["newC", "sortParam"],
   data: () => ({
     page: 1,
     perPage: 10,
@@ -41,6 +41,21 @@ export default {
       this.page = 1;
       this.contacts = this.newC;
     },
+    sortParam() {
+      if (this.sortParam == "a-z") {
+        this.contacts.sort((a, b) => {
+          return a.name.first > b.name.first ? 1 : -1;
+        });
+      } else if (this.sortParam == "z-a") {
+        this.contacts.sort((a, b) => {
+          return a.name.first < b.name.first ? 1 : -1;
+        });
+      } else if (this.sortParam == "random") {
+        this.contacts.sort((a, b) => {
+          return Math.random() - 0.5;
+        });
+      }
+    },
   },
   mounted() {
     this.contacts = this.getContacts();
@@ -50,7 +65,6 @@ export default {
 
 <style lang='scss' scoped>
 .pagination {
-  margin-top: 1%;
   padding: 0.5% 0;
 }
 </style>

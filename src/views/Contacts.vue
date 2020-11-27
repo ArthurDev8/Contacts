@@ -12,13 +12,15 @@
       <loader v-if="loading" />
       <div v-else>
         <div v-if="table">
-          <Table :contacts="dataCont" />
+          <Table :contacts="dataCont" @sortBy="sortBy" :sortParam="sortParam" />
         </div>
 
         <div v-else>
           <Tile :contacts="dataCont" />
         </div>
-        <Pagination @cont="cont" :newC="newC" />
+
+        <Statistic :newC="newC" />
+        <Pagination @cont="cont" :newC="newC" :sortParam="sortParam" />
       </div>
     </div>
   </div>
@@ -33,6 +35,7 @@ import Table from "@/components/table/Table";
 import NavPanel from "@/components/NavPanel";
 import Pagination from "@/components/Pagination";
 import SearchPanel from "@/components/SearchPanel";
+import Statistic from "@/components/Statistic";
 export default {
   name: "Contacts",
   data: () => ({
@@ -42,6 +45,7 @@ export default {
     dataCont: null,
     newC: null,
     resetSearchFields: null,
+    sortParam: "",
   }),
   components: {
     Loader,
@@ -50,6 +54,7 @@ export default {
     NavPanel,
     Pagination,
     SearchPanel,
+    Statistic,
   },
   methods: {
     ...mapActions(["onGetContacts"]),
@@ -62,6 +67,9 @@ export default {
     },
     newCont(data) {
       this.newC = data;
+    },
+    sortBy(data) {
+      this.sortParam = data;
     },
     async refresh(data) {
       this.loading = true;

@@ -3,7 +3,15 @@
     <thead>
       <tr>
         <th v-for="title in tableTitle" :key="title.title">
-          <h3 class="tableTitle">{{ title.title }}</h3>
+          <h3 class="tableTitle">
+            <span>{{ title.title }}</span>
+            <v-icon
+              @click="sortBy"
+              class="iconSort"
+              :class="title.icon"
+              medium
+            ></v-icon>
+          </h3>
         </th>
       </tr>
     </thead>
@@ -57,18 +65,33 @@ export default {
   components: {
     TooltipCopy,
   },
-  props: ["contacts"],
+  props: ["contacts", "sortParam"],
   data: () => ({
     tableTitle: [
       { title: "Avatar" },
-      { title: "Fullname" },
+      { title: "Fullname", icon: "fas fa-sort" },
       { title: "Birthday" },
       { title: "Email" },
       { title: "Phone" },
       { title: "Location" },
       { title: "Nationality" },
     ],
+    count: 0,
   }),
+  methods: {
+    sortBy() {
+      this.count += 1;
+      if (this.count == 1) {
+        this.$emit("sortBy", "a-z");
+      } else if (this.count == 2) {
+        // this.count = 0
+        this.$emit("sortBy", "z-a");
+      } else if (this.count == 3) {
+        this.count = 0;
+        this.$emit("sortBy", "random");
+      }
+    },
+  },
 };
 </script>
 
@@ -81,7 +104,19 @@ export default {
   color: gray;
   display: flex;
   justify-content: flex-start;
+  align-content: center;
+  align-items: center;
   margin-left: -10px;
+  & span {
+    padding-right: 15px;
+  }
+}
+.iconSort {
+  transition: 0.4s;
+  &:hover {
+    cursor: pointer;
+    color: #aeddff;
+  }
 }
 tr > td {
   padding: 7px !important;
